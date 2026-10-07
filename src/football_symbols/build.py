@@ -18,7 +18,7 @@ def kickoff_utc(g: Game) -> str:
 
 
 def game_json(g: Game) -> dict:
-    d = dict(id=g.id, week=g.week, kickoff=kickoff_utc(g), away=g.away, home=g.home, final=g.final)
+    d = dict(id=g.id, week=g.week, day=g.day, kickoff=kickoff_utc(g), away=g.away, home=g.home, final=g.final)
     if g.final:
         d.update(aScore=g.a_score, hScore=g.h_score, aStrip=g.a_strip, hStrip=g.h_strip,
                  copy=share.game_text(g))
@@ -36,7 +36,7 @@ def team_rows(team: str, games: list[Game]) -> list[dict]:
             continue
         home = g.home == team
         r = dict(week=w, id=g.id, opp=g.away if home else g.home, home=home,
-                 kickoff=kickoff_utc(g), final=g.final)
+                 day=g.day, kickoff=kickoff_utc(g), final=g.final)
         if g.final:
             pf, pa = (g.h_score, g.a_score) if home else (g.a_score, g.h_score)
             r.update(pf=pf, pa=pa, result="W" if pf > pa else "L" if pf < pa else "T",

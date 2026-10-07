@@ -17,9 +17,10 @@ function getJSON(path, opts) {
 
 // ---------- formatting ----------
 const PT = 'America/Los_Angeles';
-const fmtDay = d => new Date(d).toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric', timeZone: PT});
-const fmtTime = d => new Date(d).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', timeZone: PT}) + ' PT';
-const kickoff = g => fmtDay(g.kickoff) + ' · ' + fmtTime(g.kickoff);
+// Game dates come straight from the schedule's gameday (no timezone math); `kickoff` (UTC) only drives In progress.
+const asDate = day => new Date(day + 'T12:00:00Z');
+const fmtDay = day => asDate(day).toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC'});
+const gameDate = g => fmtDay(g.day);
 const started = g => Date.now() >= Date.parse(g.kickoff);
 const name = t => S.teams.teams[t].name;
 
@@ -78,7 +79,7 @@ function gameCard(g, i) {
   if (!g.final) {
     const live = started(g);
     return `<article class="card"><div class="ch"><span class="t">${head}</span><span class="tag ${live ? 'live' : ''}">${live ? 'In progress' : 'Upcoming'}</span></div>
-      <div class="up">${stamp(g.away)}<span class="when">${live ? 'Strips post after the final whistle' : kickoff(g)}</span></div>
+      <div class="up">${stamp(g.away)}<span class="when">${live ? 'Strips post after the final whistle' : gameDate(g)}</span></div>
       <div class="up">${stamp(g.home)}<span class="when">&nbsp;</span></div></article>`;
   }
   const row = (t, parts, pts, opp) => `<div class="row ${pts > opp ? 'win' : ''}">${stamp(t)}<div class="strip">${stripHTML(t, parts)}</div><span class="pts">${pts}</span></div>`;
@@ -109,7 +110,7 @@ async function viewWeek({week}) {
   const sub = !games.length ? 'No games scheduled'
     : fin.length === games.length ? `${games.length} games · every possession`
     : fin.length ? `${fin.length} of ${games.length} games final`
-    : `${games.length} games · kicks off ${fmtDay(games[0].kickoff)}`;
+    : `${games.length} games · kicks off ${fmtDay(games[0].day)}`;
   const v = $('#view');
   v.innerHTML = `<div class="hero"><h1>Week ${week}</h1><div class="acts">
       <div class="nav"><button class="btn" data-go="${week - 1}" aria-label="Previous week" ${week <= 1 ? 'disabled' : ''}>←</button><button class="btn" data-go="${week + 1}" aria-label="Next week" ${week >= 18 ? 'disabled' : ''}>→</button></div></div></div>
@@ -127,13 +128,13 @@ async function viewWeek({week}) {
 // ---------- ledgers (Standings blocks, Team season) ----------
 const recText = t => `${t.w}-${t.l}` + (t.t ? `-${t.t}` : '');
 const diffText = t => { const d = t.pf - t.pa; return d > 0 ? '+' + d : d < 0 ? '−' + -d : '0'; };
-const shortDay = d => new Date(d).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric', timeZone: PT});
+const shortDay = day => asDate(day).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric', timeZone: 'UTC'});
 function ledgerRow(team, r) {
   if (r.bye) return `<div class="lr bye"><span class="wk">${r.week}</span><span class="opp">Bye</span><span class="res"></span><span class="strip"></span></div>`;
   const opp = `<span class="opp"><span aria-hidden="true">${r.home ? 'vs' : '@'}</span><span class="sr">${r.home ? 'versus' : 'at'}</span> <a href="team/${r.opp}/">${r.opp}</a></span>`;
   if (!r.final) {
     const live = started(r);
-    return `<div class="lr up"><span class="wk">${r.week}</span>${opp}<span class="res">${live ? '<span class="live">Live</span>' : shortDay(r.kickoff)}</span><span class="strip"></span></div>`;
+    return `<div class="lr up"><span class="wk">${r.week}</span>${opp}<span class="res">${live ? '<span class="live">Live</span>' : shortDay(r.day)}</span><span class="strip"></span></div>`;
   }
   return `<div class="lr ${r.result.toLowerCase()}"><span class="wk">${r.week}</span>${opp}<span class="res"><b>${r.result}</b> ${r.pf}-${r.pa}</span><div class="strip">${stripHTML(team, r.strip)}</div></div>`;
 }
@@ -176,7 +177,7 @@ async function viewTeam({team}) {
     if (!r.final) {
       const live = started(r);
       return `<article class="card"><div class="ch"><span class="t">${head}</span><span class="tag ${live ? 'live' : ''}">${live ? 'In progress' : 'Upcoming'}</span></div>
-        <div class="up">${stamp(team, false)}<span class="when">${live ? 'Strips post after the final whistle' : kickoff(r)}</span></div>
+        <div class="up">${stamp(team, false)}<span class="when">${live ? 'Strips post after the final whistle' : gameDate(r)}</span></div>
         <div class="up">${stamp(r.opp)}<span class="when">&nbsp;</span></div></article>`;
     }
     const row = (t, parts, pts, opp, link) => `<div class="row ${pts > opp ? 'win' : ''}">${stamp(t, link)}<div class="strip">${stripHTML(t, parts)}</div><span class="pts">${pts}</span></div>`;
