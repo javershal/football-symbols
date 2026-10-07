@@ -55,7 +55,7 @@ function fit(root = document) {
 let fitRaf = 0;
 addEventListener('resize', () => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(() => fit()); });
 
-// ---------- clipboard, toast, save image ----------
+// ---------- clipboard, toast ----------
 function toast(msg) {
   const el = $('#toast');
   el.textContent = msg; el.classList.add('show');
@@ -71,28 +71,6 @@ async function copy(txt, msg) {
   }
   toast(msg);
 }
-const imgPath = id => `img/${S.season}/games/${id}.png`;
-const blobs = new Map();
-const blobFor = url => {
-  if (!blobs.has(url)) blobs.set(url, fetch(url).then(r => { if (!r.ok) throw new Error('missing'); return r.blob(); }).catch(e => { blobs.delete(url); throw e; }));
-  return blobs.get(url);
-};
-// Save image links to the pre-built PNG (Noto Color Emoji, rendered server-side — reliable on iOS).
-// On touch devices that can share files, hand it to the share sheet so "Save Image" lands in Photos.
-document.addEventListener('pointerdown', e => { const a = e.target.closest('a.save'); if (a) blobFor(a.href).catch(() => {}); });
-async function saveImage(a, e) {
-  const touch = matchMedia('(pointer:coarse)').matches;
-  e.preventDefault();
-  let blob;
-  try { blob = await blobFor(a.href); } catch (_) { toast('Image not ready yet'); return; }
-  const file = new File([blob], a.getAttribute('download'), {type: 'image/png'});
-  if (touch && navigator.canShare && navigator.canShare({files: [file]})) {
-    try { await navigator.share({files: [file]}); return; } catch (err) { if (err.name === 'AbortError') return; }
-  }
-  const u = URL.createObjectURL(blob), dl = document.createElement('a');
-  dl.href = u; dl.download = file.name; document.body.appendChild(dl); dl.click(); dl.remove();
-  setTimeout(() => URL.revokeObjectURL(u), 5000);
-}
 
 // ---------- Scores view ----------
 function gameCard(g, i) {
@@ -104,10 +82,9 @@ function gameCard(g, i) {
       <div class="up">${stamp(g.home)}<span class="when">&nbsp;</span></div></article>`;
   }
   const row = (t, parts, pts, opp) => `<div class="row ${pts > opp ? 'win' : ''}">${stamp(t)}<div class="strip">${stripHTML(t, parts)}</div><span class="pts">${pts}</span></div>`;
-  return `<article class="card" data-fit data-game="${esc(g.id)}"><div class="ch"><span class="t">${head}</span><span class="tag final">Final</span>
-      <button class="copy" data-copy="${i}" aria-label="Copy ${head} to clipboard">Copy</button>
-      <a class="copy save" href="${imgPath(g.id)}" download="${esc(g.id)}.png" aria-label="Save image of ${head}">Save</a></div>
-    ${row(g.away, g.aStrip, g.aScore, g.hScore)}${row(g.home, g.hStrip, g.hScore, g.aScore)}</article>`;
+  return `<article class="card" data-fit data-game="${esc(g.id)}"><div class="ch"><span class="t">${head}</span><span class="tag">Final</span></div>
+    ${row(g.away, g.aStrip, g.aScore, g.hScore)}${row(g.home, g.hStrip, g.hScore, g.aScore)}
+    <div class="cf"><button class="copy" data-copy="${i}" aria-label="Copy ${head} to clipboard">Copy</button></div></article>`;
 }
 
 function weekNav(cur) {
@@ -136,8 +113,7 @@ async function viewWeek({week}) {
     : `${games.length} games · kicks off ${fmtDay(games[0].kickoff)}`;
   const v = $('#view');
   v.innerHTML = `<div class="hero"><h1>Week ${week}</h1><div class="acts">
-      <div class="nav"><button class="btn" data-go="${week - 1}" aria-label="Previous week" ${week <= 1 ? 'disabled' : ''}>←</button><button class="btn" data-go="${week + 1}" aria-label="Next week" ${week >= 18 ? 'disabled' : ''}>→</button></div>
-      <button class="btn solid" id="copyWeek" ${fin.length ? '' : 'disabled'}>Copy week</button></div></div>
+      <div class="nav"><button class="btn" data-go="${week - 1}" aria-label="Previous week" ${week <= 1 ? 'disabled' : ''}>←</button><button class="btn" data-go="${week + 1}" aria-label="Next week" ${week >= 18 ? 'disabled' : ''}>→</button></div></div></div>
     <p class="sub">${esc(sub)}</p>
     <div class="grid">${games.map(gameCard).join('')}</div>`;
   v.onclick = e => {
@@ -145,9 +121,6 @@ async function viewWeek({week}) {
     if (go) return navigate(`week/${go.dataset.go}/`);
     const c = e.target.closest('[data-copy]');
     if (c) { const g = games[+c.dataset.copy]; return copy(g.copy, 'Copied — ' + g.copy.split(':')[0]); }
-    if (e.target.closest('#copyWeek')) return copy(`Week ${week}\n\n` + fin.map(g => g.copy).join('\n\n'), `Copied Week ${week}`);
-    const a = e.target.closest('a.save');
-    if (a) return saveImage(a, e);
   };
   fit(v);
 }

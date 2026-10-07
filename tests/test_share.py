@@ -23,14 +23,6 @@ def test_winner_first_when_away_wins(games):
     assert share.game_text(g).startswith("Colts 30, Commanders 13:\nIND ")
 
 
-def test_week_text(games):
-    wk = [g for g in games.values() if g.week == 4]
-    t = share.week_text(4, wk)
-    assert t.startswith("Week 4\n\n")
-    assert t.count(":\n") == sum(g.final for g in wk)
-    assert "\n\n\n" not in t
-
-
 def test_every_final_game_fits_bluesky(games):
     for g in games.values():
         if g.final:
