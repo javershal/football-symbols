@@ -61,3 +61,62 @@ footer a{color:var(--ink2)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .err{color:var(--acc)}
 @media(max-width:420px){.brand{letter-spacing:.03em}.tabs a{padding:0 5px}.brand .home{font-size:15px}}
+/* ledgers: Standings blocks + Team season */
+.jump{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 6px;padding-bottom:4px}
+.jump::-webkit-scrollbar{display:none}
+.jump button{flex:0 0 auto;min-height:36px;border:1.5px dashed var(--rule);background:transparent;color:var(--ink2);padding:0 10px;font-size:12px;font-weight:700}
+.jump button:hover{color:var(--ink);border-color:var(--ink)}
+.division{scroll-margin-top:110px;margin-top:18px}
+h2{margin:0 0 10px;font:800 30px/1 var(--head);text-shadow:2px 2px 0 var(--acc)}
+.blocks{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media(min-width:760px){.blocks{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}}
+.tb{padding:10px 12px 8px}
+.tbh{display:flex;align-items:center;gap:10px;padding:2px 0 8px}
+.tbh .tn{flex:1;min-width:0;font:800 18px/1 var(--head);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:36px;display:flex;align-items:center}
+.tbh .tn:hover{text-decoration:underline}
+.rec{font:800 24px/1 var(--head)}
+.rec.big{font-size:clamp(34px,10vw,56px);color:var(--ink)}
+.diff{color:var(--ink2);font-size:12px;min-width:32px;text-align:right}
+.lr{display:grid;grid-template-columns:18px 50px 60px minmax(0,1fr);gap:6px;align-items:center;font-size:12px;padding:3px 0;min-height:24px}
+.lr+.lr{border-top:1px dashed rgba(94,138,105,.4)}
+.lr .wk{color:var(--ink2);text-align:right}
+.lr .opp{white-space:nowrap;color:var(--ink2)}
+.lr .opp a{color:var(--ink);font-weight:700;text-decoration:none}
+.lr .opp a:hover{text-decoration:underline}
+.lr .res{white-space:nowrap;color:var(--ink2)}
+.lr .res b{display:inline-block;width:1.1em;color:var(--ink)}
+.lr.l .res b{color:var(--ink2)}
+.lr.bye .opp{font-style:italic}
+.lr.up .res{font-size:11.5px}
+.lr .live{color:var(--acc)}
+.lr.lh{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);min-height:0;padding:0 0 3px}
+.lr .strip .s{font-size:20px}
+.tb.solo{padding:10px 14px}
+.tb.solo .lr{grid-template-columns:22px 56px 70px minmax(0,1fr);font-size:13px;min-height:30px}
+/* team page */
+.team-hero{align-items:flex-end}
+.th-stamp{margin-bottom:12px}
+.th-stamp .stamp{font-size:20px;padding:2px 10px}
+.team-hero h1{font-size:clamp(48px,14vw,104px)}
+.seg{display:flex;gap:0;margin:0 0 14px}
+.seg button{min-height:36px;padding:0 14px;border:1.5px solid var(--ink);background:transparent;font-size:13px;font-weight:700}
+.seg button+button{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tag.res-w{border-color:var(--ink);color:var(--ink)}
+.byecard{border:1.5px dashed var(--rule);padding:10px 14px;color:var(--ink2);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-style:italic}
+.tidx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
+@media(min-width:760px){.tidx{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tidx h2{font-size:20px;text-shadow:2px 2px 0 var(--acc)}
+.tidx ul{list-style:none;margin:0;padding:0}
+.tidx a{display:flex;align-items:center;gap:10px;min-height:40px;text-decoration:none}
+.tidx a:hover span:last-child{text-decoration:underline}
+@media(max-width:420px){.lr{grid-template-columns:16px 44px 54px minmax(0,1fr);gap:5px}.tb{padding:10px 10px 8px}}
+.th-stamp{display:flex;align-items:center;gap:16px}
+.rec.big{font-size:clamp(28px,8vw,44px)}
+/* Team "Our drives" on phones: meta line, then the strip at full width */
+@media(max-width:759px){
+  .tb.solo .lr{grid-template-columns:22px 56px minmax(0,1fr);grid-template-areas:"wk opp res" "strip strip strip";row-gap:2px;padding:5px 0}
+  .tb.solo .lr .wk{grid-area:wk}.tb.solo .lr .opp{grid-area:opp}.tb.solo .lr .res{grid-area:res}.tb.solo .lr .strip{grid-area:strip}
+  .tb.solo .lr.lh .strip{display:none}
+  .tb.solo .lr .strip:empty{display:none}
+}

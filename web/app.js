@@ -124,14 +124,89 @@ async function viewWeek({week}) {
   fit(v);
 }
 
-// ---------- placeholders (next milestone) ----------
+// ---------- ledgers (Standings blocks, Team season) ----------
+const recText = t => `${t.w}-${t.l}` + (t.t ? `-${t.t}` : '');
+const diffText = t => { const d = t.pf - t.pa; return d > 0 ? '+' + d : d < 0 ? '−' + -d : '0'; };
+const shortDay = d => new Date(d).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric', timeZone: PT});
+function ledgerRow(team, r) {
+  if (r.bye) return `<div class="lr bye"><span class="wk">${r.week}</span><span class="opp">Bye</span><span class="res"></span><span class="strip"></span></div>`;
+  const opp = `<span class="opp"><span aria-hidden="true">${r.home ? 'vs' : '@'}</span><span class="sr">${r.home ? 'versus' : 'at'}</span> <a href="team/${r.opp}/">${r.opp}</a></span>`;
+  if (!r.final) {
+    const live = started(r);
+    return `<div class="lr up"><span class="wk">${r.week}</span>${opp}<span class="res">${live ? '<span class="live">Live</span>' : shortDay(r.kickoff)}</span><span class="strip"></span></div>`;
+  }
+  return `<div class="lr ${r.result.toLowerCase()}"><span class="wk">${r.week}</span>${opp}<span class="res"><b>${r.result}</b> ${r.pf}-${r.pa}</span><div class="strip">${stripHTML(team, r.strip)}</div></div>`;
+}
+function ledgerHead() {
+  return `<div class="lr lh" aria-hidden="true"><span class="wk">Wk</span><span class="opp">Opp</span><span class="res">Result</span><span class="strip">Drives</span></div>`;
+}
+
+// ---------- Standings view ----------
+const slug = s => s.toLowerCase().replace(/\s+/g, '-');
 async function viewStandings() {
   document.title = 'Standings · Possession Strips';
-  $('#view').innerHTML = `<div class="hero"><h1>Standings</h1></div><p class="sub">Coming next.</p>`;
+  const st = await getJSON(`${S.season}/standings.json`);
+  const block = t => `<section class="card tb" data-fit aria-label="${esc(S.teams.teams[t.team].city + ' ' + name(t.team))}">
+      <div class="tbh">${stamp(t.team)}<a class="tn" href="team/${t.team}/">${esc(name(t.team))}</a>
+        <span class="rec">${recText(t)}</span><span class="diff" title="Point differential">${diffText(t)}</span></div>
+      ${ledgerHead()}${t.games.map(r => ledgerRow(t.team, r)).join('')}</section>`;
+  const v = $('#view');
+  v.innerHTML = `<div class="hero"><h1>Standings</h1></div>
+    <p class="sub">Through Week ${S.meta.latestWeek} · by record, then point differential</p>
+    <nav class="jump" aria-label="Jump to division">${st.divisions.map(d => `<button data-jump="${slug(d.name)}">${esc(d.name)}</button>`).join('')}</nav>
+    ${st.divisions.map(d => `<section class="division" id="${slug(d.name)}"><h2>${esc(d.name)}</h2>
+      <div class="blocks">${d.teams.map(block).join('')}</div></section>`).join('')}`;
+  v.onclick = e => {
+    const j = e.target.closest('[data-jump]');
+    if (j) document.getElementById(j.dataset.jump).scrollIntoView({behavior: 'smooth', block: 'start'});
+  };
+  fit(v);
 }
+
+// ---------- Team view ----------
 async function viewTeam({team}) {
-  document.title = (team ? name(team) : 'Teams') + ' · Possession Strips';
-  $('#view').innerHTML = `<div class="hero"><h1>${team ? esc(team) : 'Teams'}</h1></div><p class="sub">Coming next.</p>`;
+  if (!team) return viewTeamIndex();
+  const info = S.teams.teams[team];
+  document.title = `${info.city} ${info.name} · Possession Strips`;
+  const d = await getJSON(`${S.season}/teams/${team}.json`);
+  const mode = S.teamMode || 'drives';
+  const matchup = r => {
+    if (r.bye) return `<div class="byecard">Week ${r.week} · Bye</div>`;
+    const head = `Week ${r.week} · ${r.home ? 'vs' : 'at'} ${esc(name(r.opp))}`;
+    if (!r.final) {
+      const live = started(r);
+      return `<article class="card"><div class="ch"><span class="t">${head}</span><span class="tag ${live ? 'live' : ''}">${live ? 'In progress' : 'Upcoming'}</span></div>
+        <div class="up">${stamp(team, false)}<span class="when">${live ? 'Strips post after the final whistle' : kickoff(r)}</span></div>
+        <div class="up">${stamp(r.opp)}<span class="when">&nbsp;</span></div></article>`;
+    }
+    const row = (t, parts, pts, opp, link) => `<div class="row ${pts > opp ? 'win' : ''}">${stamp(t, link)}<div class="strip">${stripHTML(t, parts)}</div><span class="pts">${pts}</span></div>`;
+    return `<article class="card" data-fit><div class="ch"><span class="t">${head}</span><span class="tag res-${r.result.toLowerCase()}">${r.result}</span>
+        <button class="tag copy" data-copy="${r.week}" aria-label="Copy week ${r.week} game to clipboard">Copy</button></div>
+      ${row(team, r.strip, r.pf, r.pa, false)}${row(r.opp, r.oppStrip, r.pa, r.pf, true)}</article>`;
+  };
+  const body = mode === 'drives'
+    ? `<section class="card tb solo" data-fit aria-label="${esc(info.name)} drives by game">${ledgerHead()}${d.games.map(r => ledgerRow(team, r)).join('')}</section>`
+    : `<div class="grid">${d.games.map(matchup).join('')}</div>`;
+  const v = $('#view');
+  v.innerHTML = `<div class="hero team-hero"><div><div class="th-stamp">${stamp(team, false)}<span class="rec big">${recText(d)}</span></div><h1>${esc(info.name)}</h1></div></div>
+    <p class="sub">${esc(info.city)} · ${esc(d.division)} · PF ${d.pf} · PA ${d.pa} · ${diffText(d)}</p>
+    <div class="seg" role="group" aria-label="Show">
+      <button data-mode="drives" aria-pressed="${mode === 'drives'}">Our drives</button>
+      <button data-mode="matchups" aria-pressed="${mode === 'matchups'}">Vs opponent</button></div>
+    ${body}`;
+  v.onclick = e => {
+    const m = e.target.closest('[data-mode]');
+    if (m) { S.teamMode = m.dataset.mode; return viewTeam({team}); }
+    const c = e.target.closest('[data-copy]');
+    if (c) { const r = d.games.find(g => g.week === +c.dataset.copy); return copy(r.copy, 'Copied — ' + r.copy.split(':')[0]); }
+  };
+  fit(v);
+}
+async function viewTeamIndex() {
+  document.title = 'Teams · Possession Strips';
+  $('#view').innerHTML = `<div class="hero"><h1>Teams</h1></div><p class="sub">Pick a team to see its season, drive by drive.</p>
+    <div class="tidx">${Object.entries(S.teams.divisions).map(([dv, ts]) => `<section><h2>${esc(dv)}</h2>
+      <ul>${ts.map(t => `<li><a href="team/${t}/">${stamp(t, false)}<span>${esc(name(t))}</span></a></li>`).join('')}</ul></section>`).join('')}</div>`;
 }
 
 // ---------- routing: path routes (week/N/, standings/, team/ABBR/), #/… hashes accepted ----------

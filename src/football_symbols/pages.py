@@ -20,30 +20,25 @@ ASSETS = ["app.js", "app.css", "favicon.svg"]
 
 
 def site_url() -> str:
-    """Absolute URL of the site root (og:image must be absolute). Set SITE_URL in CI."""
+    """Absolute URL of the site root, for og:url. Set SITE_URL in CI."""
     return os.environ.get("SITE_URL", "http://localhost:8000/").rstrip("/") + "/"
 
 
 def routes(season: int, latest_week: int, records: dict[str, str]) -> list[dict]:
     teams = config.teams()["teams"]
     out = [dict(path="", title=f"Week {latest_week} · Possession Strips",
-                description=f"Every {season} NFL drive as an emoji. Week {latest_week} scores.",
-                og=f"img/{season}/og/week-{latest_week}.png")]
+                description=f"Every {season} NFL drive as an emoji. Week {latest_week} scores.")]
     for w in range(1, 19):
         out.append(dict(path=f"week/{w}/", title=f"Week {w} · Possession Strips",
-                        description=f"Every drive of every {season} Week {w} game, one emoji per possession.",
-                        og=f"img/{season}/og/week-{w}.png"))
+                        description=f"Every drive of every {season} Week {w} game, one emoji per drive."))
     out.append(dict(path="standings/", title="Standings · Possession Strips",
-                    description=f"{season} NFL standings by division, with every game's drives.",
-                    og=f"img/{season}/og/standings.png"))
+                    description=f"{season} NFL standings by division, with every game's drives."))
     out.append(dict(path="team/", title="Teams · Possession Strips",
-                    description=f"Pick a team to see its {season} season drive by drive.",
-                    og=f"img/{season}/og/standings.png"))
+                    description=f"Pick a team to see its {season} season drive by drive."))
     for t, info in teams.items():
         rec = f" ({records[t]})" if records.get(t) else ""
         out.append(dict(path=f"team/{t}/", title=f"{info['city']} {info['name']} · Possession Strips",
-                        description=f"{info['name']} {season}{rec}: every drive, game by game.",
-                        og=f"img/{season}/og/team-{t}.png"))
+                        description=f"{info['name']} {season}{rec}: every drive, game by game."))
     return out
 
 
@@ -62,7 +57,7 @@ def write_pages(site: Path, season: int) -> None:
         depth = r["path"].count("/")
         page = tpl
         for k, val in {"base": "../" * depth or "./", "title": r["title"], "description": r["description"],
-                       "url": root + r["path"], "og_image": root + r["og"],
+                       "url": root + r["path"],
                        "v_css": v["app.css"], "v_js": v["app.js"]}.items():
             page = page.replace("{{" + k + "}}", html.escape(val, quote=True))
         dest = site / r["path"] / "index.html"
