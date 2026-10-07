@@ -169,7 +169,7 @@ async function viewTeam({team}) {
   const info = S.teams.teams[team];
   document.title = `${info.city} ${info.name} · Possession Strips`;
   const d = await getJSON(`${S.season}/teams/${team}.json`);
-  const mode = S.teamMode || 'drives';
+  const mode = S.teamMode || 'matchups';
   const matchup = r => {
     if (r.bye) return `<div class="byecard">Week ${r.week} · Bye</div>`;
     const head = `Week ${r.week} · ${r.home ? 'vs' : 'at'} ${esc(name(r.opp))}`;
@@ -191,8 +191,8 @@ async function viewTeam({team}) {
   v.innerHTML = `<div class="hero team-hero"><div><div class="th-stamp">${stamp(team, false)}<span class="rec big">${recText(d)}</span></div><h1>${esc(info.name)}</h1></div></div>
     <p class="sub">${esc(info.city)} · ${esc(d.division)} · PF ${d.pf} · PA ${d.pa} · ${diffText(d)}</p>
     <div class="seg" role="group" aria-label="Show">
-      <button data-mode="drives" aria-pressed="${mode === 'drives'}">Our drives</button>
-      <button data-mode="matchups" aria-pressed="${mode === 'matchups'}">Vs opponent</button></div>
+      <button data-mode="matchups" aria-pressed="${mode === 'matchups'}">Vs opponent</button>
+      <button data-mode="drives" aria-pressed="${mode === 'drives'}">Our drives</button></div>
     ${body}`;
   v.onclick = e => {
     const m = e.target.closest('[data-mode]');
