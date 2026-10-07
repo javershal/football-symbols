@@ -213,7 +213,13 @@ async function viewTeamIndex() {
 function parseRoute() {
   let p = location.pathname.startsWith(ROOT) ? location.pathname.slice(ROOT.length) : '';
   const h = location.hash.match(/^#\/?(.+)$/);
-  if (h) { p = h[1]; history.replaceState(null, '', ROOT + p.replace(/\/*$/, '/')); }
+  if (h) p = h[1];
+  const r = routeOf(p);
+  const canon = ROOT + pathOf(r);
+  if (h || (p && canon !== location.pathname)) history.replaceState(null, '', canon); // e.g. #/team/la -> team/LAR/
+  return r;
+}
+function routeOf(p) {
   const [a, b] = p.split('/').filter(Boolean);
   if (a === 'week' && +b >= 1 && +b <= 18) return {view: 'week', week: +b};
   if (a === 'standings') return {view: 'standings'};
@@ -221,7 +227,12 @@ function parseRoute() {
     const t = b && (S.teams.aliases[b.toUpperCase()] || b.toUpperCase());
     return {view: 'team', team: S.teams.teams[t] ? t : null};
   }
-  return {view: 'week', week: S.meta.latestWeek};
+  return {view: 'week', week: S.meta.latestWeek, home: true};
+}
+function pathOf(r) {
+  if (r.view === 'week') return r.home ? '' : `week/${r.week}/`;
+  if (r.view === 'team') return r.team ? `team/${r.team}/` : 'team/';
+  return 'standings/';
 }
 const VIEWS = {week: viewWeek, standings: viewStandings, team: viewTeam};
 async function render() {
