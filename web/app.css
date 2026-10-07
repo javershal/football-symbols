@@ -92,7 +92,7 @@ h2{margin:0 0 10px;font:800 30px/1 var(--head);text-shadow:2px 2px 0 var(--acc)}
 .lr.lh{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);min-height:0;padding:0 0 3px}
 .lr .strip .s{font-size:20px}
 .tb.solo{padding:10px 14px}
-.tb.solo .lr{grid-template-columns:22px 56px 70px minmax(0,1fr);font-size:13px;min-height:30px}
+@media(min-width:760px){.tb.solo .lr{grid-template-columns:22px 56px 70px minmax(0,1fr);font-size:13px;min-height:30px}} /* phones use the Standings row layout */
 /* team page */
 .team-hero{align-items:flex-end}
 .th-stamp{margin-bottom:12px}
@@ -110,13 +110,6 @@ h2{margin:0 0 10px;font:800 30px/1 var(--head);text-shadow:2px 2px 0 var(--acc)}
 .tidx ul{list-style:none;margin:0;padding:0}
 .tidx a{display:flex;align-items:center;gap:10px;min-height:40px;text-decoration:none}
 .tidx a:hover span:last-child{text-decoration:underline}
-@media(max-width:420px){.lr{grid-template-columns:16px 44px 54px minmax(0,1fr);gap:5px}.tb{padding:10px 10px 8px}}
+@media(max-width:420px){.tb,.tb.solo{padding:10px 10px 8px}}
 .th-stamp{display:flex;align-items:center;gap:16px}
 .rec.big{font-size:clamp(28px,8vw,44px)}
-/* Team "Our drives" on phones: meta line, then the strip at full width */
-@media(max-width:759px){
-  .tb.solo .lr{grid-template-columns:22px 56px minmax(0,1fr);grid-template-areas:"wk opp res" "strip strip strip";row-gap:2px;padding:5px 0}
-  .tb.solo .lr .wk{grid-area:wk}.tb.solo .lr .opp{grid-area:opp}.tb.solo .lr .res{grid-area:res}.tb.solo .lr .strip{grid-area:strip}
-  .tb.solo .lr.lh .strip{display:none}
-  .tb.solo .lr .strip:empty{display:none}
-}
