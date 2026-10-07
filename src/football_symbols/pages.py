@@ -40,9 +40,9 @@ def routes(season: int, latest_week: int, records: dict[str, str]) -> list[dict]
                     description=f"Pick a team to see its {season} season drive by drive.",
                     og=f"img/{season}/og/standings.png"))
     for t, info in teams.items():
-        rec = records.get(t, "")
+        rec = f" ({records[t]})" if records.get(t) else ""
         out.append(dict(path=f"team/{t}/", title=f"{info['city']} {info['name']} · Possession Strips",
-                        description=f"{info['name']} {season}{' (' + rec + ')' if rec else ''}: every drive, game by game.",
+                        description=f"{info['name']} {season}{rec}: every drive, game by game.",
                         og=f"img/{season}/og/team-{t}.png"))
     return out
 
