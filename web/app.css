@@ -113,3 +113,4 @@ h2{margin:0 0 10px;font:800 30px/1 var(--head);text-shadow:2px 2px 0 var(--acc)}
 @media(max-width:420px){.tb,.tb.solo{padding:10px 10px 8px}}
 .th-stamp{display:flex;align-items:center;gap:16px}
 .rec.big{font-size:clamp(28px,8vw,44px)}
+footer .src{margin:10px 0 0}footer .src a{display:inline-flex;align-items:center;min-height:36px;color:var(--ink);font-weight:700}
