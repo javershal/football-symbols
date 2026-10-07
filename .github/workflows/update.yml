@@ -1,0 +1,84 @@
+name: Update data and deploy
+
+on:
+  schedule:
+    # All times UTC; cron runs can start late. Season months only (Sep-Jan).
+    - cron: "0 11 * 9-12,1 *"      # nightly, 4am PT
+    - cron: "0 7 * 9-12,1 2,5"     # after Thursday and Monday night games (Fri/Tue 7:00 UTC)
+    - cron: "0 1,7 * 9-12,1 1"     # Sunday evening PT, and after Sunday night (Mon 1:00, 7:00 UTC)
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: ["site/data/**", "**.md"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.commit.outputs.changed == 'true' || github.event_name != 'schedule' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run ruff check src tests
+
+      - name: Fetch nflverse data
+        run: uv run football-symbols fetch
+
+      # Golden tests run on the fresh data. If they fail, nothing is committed or deployed,
+      # and GitHub emails the failure.
+      - name: Golden tests
+        run: uv run pytest -q
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+        run: uv run football-symbols build
+
+      - name: Commit data if changed
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/data
+          if git diff --staged --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "data: update $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
