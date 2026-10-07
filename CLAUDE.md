@@ -74,7 +74,7 @@ Set `SITE_URL` (CI uses the configure-pages `base_url`) to get correct `og:url` 
   opponent's, plus Copy) and "Our drives" second (one line per game: week, opponent, result, strip,
   the same row layout as Standings). `team/` is an index of all 32 teams by division. Team stamps link
   to team pages everywhere.
-- The footer adds a "Source on GitHub" link, inviting people to fork it.
+- No link to the GitHub repo on the site (tried and removed at Jacob's request).
 
 ## Open items / known caveats
 
