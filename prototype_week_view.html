@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Possession Strips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap">
+<style>
+:root{--bg:#2F5D3A;--card:#2A5434;--ink:#F4F1E8;--ink2:#B9CDBE;--rule:#5E8A69;--acc:#E3B341;
+--emoji:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+--head:'Bricolage Grotesque',system-ui,sans-serif;--mono:'Atkinson Hyperlegible Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 var(--mono)}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1.5px dashed var(--rule);padding-top:env(safe-area-inset-top)}
+.brand{display:flex;align-items:center;justify-content:space-between;padding:10px 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.brand b{color:var(--ink);font-family:var(--head);font-weight:800;font-size:16px;letter-spacing:0;text-transform:none}
+.tabs{display:flex;gap:4px}
+.tabs span{padding:3px 8px;border:1.5px solid transparent}
+.tabs span.on{border-color:var(--ink);color:var(--ink)}
+.tabs span.off{opacity:.55}
+.weeks{display:flex;gap:6px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:none;scroll-snap-type:x proximity}
+.weeks::-webkit-scrollbar{display:none}
+.weeks button{flex:0 0 auto;min-width:40px;height:34px;border:1.5px dashed var(--rule);background:transparent;color:var(--ink2);font-weight:700;scroll-snap-align:center}
+.weeks button.on{background:var(--ink);color:var(--bg);border:1.5px solid var(--ink)}
+.weeks button.future{opacity:.5}
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:22px 0 14px}
+h1{margin:0;font:800 clamp(56px,16vw,104px)/.86 var(--head);text-shadow:4px 3px 0 var(--acc);letter-spacing:-.01em}
+.hero .acts{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.nav{display:flex;gap:6px}
+.btn{border:1.5px solid var(--ink);background:transparent;padding:7px 11px;font-size:13px;font-weight:700;min-height:36px}
+.btn:disabled{opacity:.3;cursor:default}
+.btn.solid{background:var(--acc);border-color:var(--acc);color:#1d2a1f}
+.sub{margin:0 0 16px;color:var(--ink2);font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media(min-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}}
+.card{background:var(--card);border:1.5px dashed var(--rule);padding:10px 14px 8px}
+.ch{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.ch .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{border:1px solid var(--ink2);padding:0 5px;font-size:10.5px}
+.tag.live{border-color:var(--acc);color:var(--acc)}
+.copy{border:1.5px solid var(--rule);background:transparent;padding:4px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;min-height:30px}
+.copy:hover,.copy:focus-visible{border-color:var(--ink)}
+.row{display:grid;grid-template-columns:52px minmax(0,1fr) 38px;align-items:center;gap:10px;padding:7px 0}
+.row+.row{border-top:1px dashed rgba(94,138,105,.55)}
+.stamp{justify-self:start;color:#fff;font:800 16px/1.35 var(--head);padding:0 7px;min-width:44px;text-align:center}
+.strip{container-type:inline-size;min-width:0}
+.strip .s{display:block;white-space:nowrap;font-family:var(--emoji);letter-spacing:.06em;line-height:1.25;font-size:20px}
+.pipe{font-family:var(--mono);color:var(--rule);margin:0 .22em;letter-spacing:0}
+.pts{text-align:right;font:800 28px/1 var(--head);color:var(--ink2)}
+.win .pts{color:var(--ink)}
+.up{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:center;padding:7px 0}
+.up .when{color:var(--ink2);font-size:12.5px}
+.legend{margin:26px 0 0;border-top:3px solid var(--acc);padding:12px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px;font-size:12.5px}
+@media(min-width:760px){.legend{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.legend span{font-family:var(--emoji);margin-right:6px}
+footer{color:var(--ink2);font-size:12px;padding:16px 0 calc(28px + env(safe-area-inset-bottom))}
+footer a{color:var(--ink2)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 14px;font-weight:700;font-size:13px;transition:.2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="brand"><b>Possession Strips</b>
+    <div class="tabs"><span class="on">Scores</span><span class="off" title="Coming next">Standings</span><span class="off" title="Coming next">Teams</span></div></div>
+  <nav class="weeks" id="weeks" aria-label="Choose week"></nav>
+</div></header>
+<main class="wrap">
+  <div class="hero">
+    <h1 id="title">Week</h1>
+    <div class="acts">
+      <div class="nav"><button class="btn" id="prev" aria-label="Previous week">←</button><button class="btn" id="next" aria-label="Next week">→</button></div>
+      <button class="btn solid" id="copyWeek">Copy week</button>
+    </div>
+  </div>
+  <p class="sub" id="sub"></p>
+  <div class="grid" id="grid"></div>
+  <div class="legend" id="legend"></div>
+  <footer>Data: <a href="https://github.com/nflverse/nflverse-data">nflverse</a> play-by-play (CC-BY-4.0). Strips read left to right, one mark per drive. | = halftime. Updated Oct 6, 2026.</footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const DATA=__DATA__;
+const TC={ARI:['#97233F','#FFB612'],ATL:['#A71930','#000000'],BAL:['#241773','#9E7C0C'],BUF:['#00338D','#C60C30'],CAR:['#0085CA','#101820'],CHI:['#0B162A','#C83803'],CIN:['#FB4F14','#000000'],CLE:['#311D00','#FF3C00'],DAL:['#041E42','#869397'],DEN:['#FB4F14','#002244'],DET:['#0076B6','#B0B7BC'],GB:['#203731','#FFB612'],HOU:['#03202F','#A71930'],IND:['#002C5F','#A2AAAD'],JAX:['#006778','#D7A22A'],KC:['#E31837','#FFB81C'],LV:['#000000','#A5ACAF'],LAC:['#0080C6','#FFC20E'],LAR:['#003594','#FFA300'],MIA:['#008E97','#FC4C02'],MIN:['#4F2683','#FFC62F'],NE:['#002244','#C60C30'],NO:['#101820','#D3BC8D'],NYG:['#0B2265','#A71930'],NYJ:['#125740','#FFFFFF'],PHI:['#004C54','#A5ACAF'],PIT:['#101820','#FFB612'],SF:['#AA0000','#B3995D'],SEA:['#002244','#69BE28'],TB:['#D50A0A','#34302B'],TEN:['#0C2340','#4B92DB'],WAS:['#5A1414','#FFB612']};
+const NAMES={ARI:'Cardinals',ATL:'Falcons',BAL:'Ravens',BUF:'Bills',CAR:'Panthers',CHI:'Bears',CIN:'Bengals',CLE:'Browns',DAL:'Cowboys',DEN:'Broncos',DET:'Lions',GB:'Packers',HOU:'Texans',IND:'Colts',JAX:'Jaguars',KC:'Chiefs',LAR:'Rams',LAC:'Chargers',LV:'Raiders',MIA:'Dolphins',MIN:'Vikings',NE:'Patriots',NO:'Saints',NYG:'Giants',NYJ:'Jets',PHI:'Eagles',PIT:'Steelers',SEA:'Seahawks',SF:'49ers',TB:'Buccaneers',TEN:'Titans',WAS:'Commanders'};
+const LEGEND=[['🟩','Touchdown'],['🟢','Field goal'],['⬜','Punt'],['⭕','Missed FG'],['🔺','Interception or fumble'],['🔻','Turnover on downs'],['♦️','Turnover returned for TD'],['🟪','Safety'],['⏸️','End of half'],['⏹️','End of game']];
+const LBL=Object.fromEntries(LEGEND.map(([e,n])=>[e,n.toLowerCase()]));
+const weeksN=Object.keys(DATA).map(Number).sort((a,b)=>a-b);
+const latest=Math.max(...weeksN.filter(w=>DATA[w].some(g=>g.final)));
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function kickoff(g){ // schedule times are US Eastern; show Pacific
+  const [h,m]=g.time.split(':').map(Number); const d=new Date(g.day+'T12:00:00');
+  let ph=h-3; const ap=ph>=12?'PM':'AM'; const h12=((ph+11)%12)+1;
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+' · '+h12+':'+String(m).padStart(2,'0')+' '+ap+' PT';
+}
+function started(g){const [h,m]=g.time.split(':').map(Number);const t=new Date(g.day+'T'+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':00-04:00');return Date.now()>t.getTime();}
+const stripText=parts=>parts.map(p=>p.join('')).join(' | ');
+const count=parts=>parts.reduce((a,p)=>a+p.length,0)*1.2+(parts.length-1)*0.75+.3;
+function stripHTML(team,parts){
+  const halves=['first half','second half','overtime'];
+  const label=team+' drives. '+parts.map((p,i)=>halves[i]+': '+(p.length?p.map(e=>LBL[e]).join(', '):'none')).join('. ');
+  return `<span class="s" role="img" aria-label="${esc(label)}">${parts.map(p=>p.join('')).join('<span class="pipe" aria-hidden="true">|</span>')}</span>`;
+}
+const stamp=t=>`<span class="stamp" style="background:${TC[t][0]};box-shadow:3px 3px 0 ${TC[t][1]}">${t}</span>`;
+function copyText(g){
+  const a=[NAMES[g.away],g.aScore],h=[NAMES[g.home],g.hScore];
+  const [w,l]=g.hScore>g.aScore?[h,a]:[a,h];
+  return `${w[0]} ${w[1]}, ${l[0]} ${l[1]}:\n${g.away} ${stripText(g.aStrip)}\n${g.home} ${stripText(g.hStrip)}`;
+}
+function card(g,i){
+  const head=`${esc(NAMES[g.away])} at ${esc(NAMES[g.home])}`;
+  if(!g.final){
+    const live=started(g);
+    return `<article class="card"><div class="ch"><span class="t">${head}</span><span class="tag ${live?'live':''}">${live?'In progress':'Upcoming'}</span></div>
+      <div class="up">${stamp(g.away)}<span class="when">${live?'Strips post after the final whistle':kickoff(g)}</span></div>
+      <div class="up">${stamp(g.home)}<span class="when">${live?'':'&nbsp;'}</span></div></article>`;
+  }
+  const w=Math.max(count(g.aStrip),count(g.hStrip));
+  const row=(t,parts,pts,opp)=>`<div class="row ${pts>opp?'win':''}">${stamp(t)}<div class="strip" style="--w:${w.toFixed(2)}">${stripHTML(t,parts)}</div><span class="pts">${pts}</span></div>`;
+  return `<article class="card"><div class="ch"><span class="t">${head}</span><span class="tag">Final</span><button class="copy" data-i="${i}" aria-label="Copy ${head} to clipboard">Copy</button></div>
+    ${row(g.away,g.aStrip,g.aScore,g.hScore)}${row(g.home,g.hStrip,g.hScore,g.aScore)}</article>`;
+}
+let cur=latest;
+function render(){
+  const games=DATA[cur]||[];
+  $('title').textContent='Week '+cur;
+  const fin=games.filter(g=>g.final).length;
+  $('sub').textContent=fin===games.length?`${games.length} games · every possession`:fin?`${fin} of ${games.length} games final`:`${games.length} games · kicks off ${kickoff(games[0]).split(' · ')[0]}`;
+  $('grid').innerHTML=games.map(card).join('');
+  $('prev').disabled=cur===weeksN[0]; $('next').disabled=cur===weeksN[weeksN.length-1];
+  $('copyWeek').disabled=!fin;
+  document.querySelectorAll('.weeks button').forEach(b=>{const on=+b.dataset.w===cur;b.classList.toggle('on',on);b.setAttribute('aria-current',on?'true':'false');if(on)b.scrollIntoView({block:'nearest',inline:'center'});});
+  fit();
+  if(location.hash!=='#/week/'+cur) history.replaceState(null,'','#/week/'+cur);
+}
+function fit(){ // shrink both strips in a card together so the longest fits without scrolling
+  document.querySelectorAll('.card').forEach(c=>{const ss=[...c.querySelectorAll('.strip .s')];if(!ss.length)return;
+    ss.forEach(s=>s.style.fontSize='20px');
+    const r=Math.min(1,...ss.map(s=>(s.parentElement.clientWidth-2)/s.scrollWidth));
+    let f=20*r;ss.forEach(s=>s.style.fontSize=f.toFixed(2)+'px');
+    for(let k=0;k<8&&ss.some(s=>s.scrollWidth>s.parentElement.clientWidth);k++){f*=.97;ss.forEach(s=>s.style.fontSize=f.toFixed(2)+'px');}});
+}
+addEventListener('resize',fit); document.fonts&&document.fonts.ready.then(fit);
+function go(w){cur=w;render();window.scrollTo({top:0});}
+$('weeks').innerHTML=weeksN.map(w=>`<button data-w="${w}" class="${DATA[w].some(g=>g.final)?'':'future'}">${w}</button>`).join('');
+$('weeks').onclick=e=>{const b=e.target.closest('button');if(b)go(+b.dataset.w)};
+$('prev').onclick=()=>go(weeksN[weeksN.indexOf(cur)-1]);
+$('next').onclick=()=>go(weeksN[weeksN.indexOf(cur)+1]);
+$('legend').innerHTML=LEGEND.map(([e,n])=>`<div><span>${e}</span>${n}</div>`).join('');
+async function copy(txt,msg){
+  try{await navigator.clipboard.writeText(txt);}catch(_){const t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(__){}t.remove();}
+  const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1600);
+}
+$('grid').onclick=e=>{const b=e.target.closest('.copy');if(!b)return;const g=DATA[cur][+b.dataset.i];copy(copyText(g),'Copied — '+copyText(g).split(':')[0]);};
+$('copyWeek').onclick=()=>copy(`Week ${cur}\n\n`+DATA[cur].filter(g=>g.final).map(copyText).join('\n\n'),`Copied Week ${cur}`);
+const m=location.hash.match(/week\/(\d+)/); if(m&&DATA[m[1]]) cur=+m[1];
+window.addEventListener('hashchange',()=>{const m=location.hash.match(/week\/(\d+)/);if(m&&DATA[m[1]]&&+m[1]!==cur)go(+m[1]);});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+.cache/
+.venv/
+__pycache__/
+*.pyc
+# site/ is build output except the data the Action commits
+site/*
+!site/data/
+.playwright-mcp/

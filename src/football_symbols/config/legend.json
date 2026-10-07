@@ -1,0 +1,16 @@
+{
+  "_doc": "The one place the legend lives. Python derivation, copy text, the site and the share images all read this file. `result` is nflverse fixed_drive_result; end-of-half splits on `when`.",
+  "outcomes": [
+    {"key": "td",     "emoji": "🟩", "label": "Touchdown",                "result": "Touchdown"},
+    {"key": "fg",     "emoji": "🟢", "label": "Field goal",               "result": "Field goal"},
+    {"key": "punt",   "emoji": "⬜", "label": "Punt",                     "result": "Punt"},
+    {"key": "miss",   "emoji": "⭕", "label": "Missed FG",                "result": "Missed field goal"},
+    {"key": "to",     "emoji": "🔺", "label": "Interception or fumble",   "result": "Turnover"},
+    {"key": "downs",  "emoji": "🔻", "label": "Turnover on downs",        "result": "Turnover on downs"},
+    {"key": "pick6",  "emoji": "♦️", "label": "Turnover returned for TD", "result": "Opp touchdown"},
+    {"key": "safety", "emoji": "🟪", "label": "Safety",                   "result": "Safety"},
+    {"key": "half",   "emoji": "⏸️", "label": "End of half",              "result": "End of half", "when": "q1-q3"},
+    {"key": "end",    "emoji": "⏹️", "label": "End of game",              "result": "End of half", "when": "q4+"}
+  ],
+  "pipe": "|"
+}

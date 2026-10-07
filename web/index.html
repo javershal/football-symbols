@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<base href="{{base}}">
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+<meta name="theme-color" content="#2F5D3A">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Possession Strips">
+<meta property="og:title" content="{{title}}">
+<meta property="og:description" content="{{description}}">
+<meta property="og:url" content="{{url}}">
+<meta property="og:image" content="{{og_image}}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap">
+<link rel="stylesheet" href="app.css?v={{v_css}}">
+</head>
+<body>
+<header><div class="wrap">
+  <div class="brand"><a class="home" href="./">Possession Strips</a>
+    <nav class="tabs" aria-label="Views"><a href="./" data-tab="week">Scores</a><a href="standings/" data-tab="standings">Standings</a><a href="team/" data-tab="team">Teams</a></nav></div>
+  <nav class="weeks" id="weeks" aria-label="Choose week" hidden></nav>
+</div></header>
+<main class="wrap">
+  <div id="view" aria-live="polite"><noscript><p class="sub">Possession Strips needs JavaScript to draw the drive charts.</p></noscript></div>
+  <div class="legend" id="legend" aria-label="Legend"></div>
+  <footer>Data: <a href="https://github.com/nflverse/nflverse-data">nflverse</a> play-by-play (CC-BY-4.0). Strips read left to right, one mark per drive. | = halftime. <span id="updated"></span></footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="app.js?v={{v_js}}"></script>
+</body>
+</html>
