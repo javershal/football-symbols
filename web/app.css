@@ -37,9 +37,9 @@ h1{margin:0;font:800 clamp(56px,16vw,104px)/.86 var(--head);text-shadow:4px 3px 
 .ch .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tag{border:1px solid var(--ink2);padding:0 5px;font-size:10.5px;white-space:nowrap}
 .tag.live{border-color:var(--acc);color:var(--acc)}
-.copy{border:1.5px solid var(--rule);background:transparent;padding:0 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;min-height:36px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink)}
-.cf{display:flex;justify-content:flex-end;margin:0 -6px -2px 0}
-.copy:hover,.copy:focus-visible{border-color:var(--ink)}
+.tag.copy{position:relative;background:transparent;color:var(--ink);letter-spacing:inherit;text-transform:uppercase;line-height:inherit;cursor:pointer}
+.tag.copy::after{content:'';position:absolute;inset:-11px -6px} /* 36px+ tap target at the tag's visual size */
+.tag.copy:hover,.tag.copy:focus-visible{border-color:var(--acc);color:var(--acc)}
 .row{display:grid;grid-template-columns:52px minmax(0,1fr) 38px;align-items:center;gap:10px;padding:7px 0}
 .row+.row{border-top:1px dashed rgba(94,138,105,.55)}
 .stamp{position:relative;justify-self:start;color:#fff;font:800 16px/1.35 var(--head);padding:0 7px;min-width:44px;text-align:center;text-decoration:none;display:inline-block}

@@ -82,9 +82,8 @@ function gameCard(g, i) {
       <div class="up">${stamp(g.home)}<span class="when">&nbsp;</span></div></article>`;
   }
   const row = (t, parts, pts, opp) => `<div class="row ${pts > opp ? 'win' : ''}">${stamp(t)}<div class="strip">${stripHTML(t, parts)}</div><span class="pts">${pts}</span></div>`;
-  return `<article class="card" data-fit data-game="${esc(g.id)}"><div class="ch"><span class="t">${head}</span><span class="tag">Final</span></div>
-    ${row(g.away, g.aStrip, g.aScore, g.hScore)}${row(g.home, g.hStrip, g.hScore, g.aScore)}
-    <div class="cf"><button class="copy" data-copy="${i}" aria-label="Copy ${head} to clipboard">Copy</button></div></article>`;
+  return `<article class="card" data-fit data-game="${esc(g.id)}"><div class="ch"><span class="t">${head}</span><button class="tag copy" data-copy="${i}" aria-label="Copy ${head} to clipboard">Copy</button></div>
+    ${row(g.away, g.aStrip, g.aScore, g.hScore)}${row(g.home, g.hStrip, g.hScore, g.aScore)}</article>`;
 }
 
 function weekNav(cur) {
