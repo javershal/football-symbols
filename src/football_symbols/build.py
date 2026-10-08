@@ -1,11 +1,12 @@
-"""Turn derived games into the site's JSON: site/data/<season>/{weeks/<n>,teams/<ABBR>,standings}.json."""
+"""Turn derived games into the site's JSON:
+site/data/<season>/{weeks/<n>,teams/<ABBR>,games/<id>,standings}.json."""
 
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from . import config, derive, share
+from . import config, derive, plays, share
 from .derive import Game
 
 ET = ZoneInfo("America/New_York")
@@ -59,9 +60,15 @@ def standings_key(t: dict):
     return (-pct, -(t["pf"] - t["pa"]), t["team"])
 
 
-def build_data(games: list[Game], season: int) -> dict[str, object]:
-    """Relative path (under data/) -> JSON payload."""
+def build_data(games: list[Game], season: int,
+               drives: dict[str, list[dict]] | None = None) -> dict[str, object]:
+    """Relative path (under data/) -> JSON payload. `drives` (plays.game_drives) feeds the game pages."""
     out: dict[str, object] = {}
+    for g in games:
+        d = game_json(g)
+        if g.final and drives is not None:
+            d["drives"] = drives.get(g.id, [])
+        out[f"{season}/games/{g.id}.json"] = dict(season=season, **d)
     for w in WEEKS:
         out[f"{season}/weeks/{w}.json"] = dict(
             season=season, week=w, games=[game_json(g) for g in games if g.week == w])
@@ -115,4 +122,4 @@ def build(cache: Path, site: Path, season: int) -> list[str]:
     sched = derive.read_schedule(cache / "games.csv", season)
     games = derive.games(pbp, sched)
     meta = dict(season=season, seasons=[season], latestWeek=latest_week(games))
-    return write_data(site / "data", build_data(games, season), meta)
+    return write_data(site / "data", build_data(games, season, plays.game_drives(pbp)), meta)

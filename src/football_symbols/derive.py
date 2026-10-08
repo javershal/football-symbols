@@ -9,6 +9,10 @@ from . import config
 PBP_COLUMNS = [
     "game_id", "week", "home_team", "away_team", "home_score", "away_score",
     "fixed_drive", "fixed_drive_result", "posteam", "qtr", "play_type", "fumble_lost",
+    # per-play drive charts (plays.py)
+    "yardline_100", "yards_gained", "penalty", "sack", "interception", "complete_pass", "touchdown",
+    "td_team", "first_down", "air_yards", "kick_distance", "field_goal_result", "down", "ydstogo",
+    "time", "desc", "kicker_player_name", "td_player_name", "drive_time_of_possession",
 ]
 
 Strip = list[list[str]]  # [first half, second half, (OT)] -> emoji per drive

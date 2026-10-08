@@ -29,13 +29,16 @@ Set `SITE_URL` (CI uses the configure-pages `base_url`) to get correct `og:url` 
 - `src/football_symbols/config/teams.json` holds names, cities, colors, divisions and the alias `LA` → `LAR`.
 - `derive.py` is a faithful port of the prototype and matches it on all 272 games. Keep the CSV row order:
   `play_id` is *not* monotonic within some games, and the golden tests depend on the file order.
+- `plays.py` builds the game page's drive charts: every drive in strip order (`h` = strip segment), each with
+  its snaps. A play runs from its snap to the next snap, so penalty yardage is folded in; drives are cut at the
+  offense's touchdown because nflverse files the try (two-point attempt) under the same drive.
 - `share.py` builds the copy-to-clipboard text. It is generated in Python and stored as `copy` on each
   final game in the JSON, and the front end uses it verbatim. That keeps the format testable in pytest.
-- `build.py` writes `site/data/2026/{weeks/<n>,teams/<ABBR>,standings}.json`, `meta.json`,
+- `build.py` writes `site/data/2026/{weeks/<n>,teams/<ABBR>,games/<id>,standings}.json`, `meta.json`,
   `legend.json` and `teams.json`. It only writes files that changed. `meta.updated` changes **only when
   data changed**, so a no-op nightly run leaves git clean and makes no commit.
 - `pages.py` copies `web/` into `site/` and writes one `index.html` per route (`week/N/`, `team/ABBR/`,
-  `team/`, `standings/`), each with its own title and description. Every page uses a relative
+  `team/`, `standings/`, `game/<game_id>/`), each with its own title and description. Every page uses a relative
   `<base href>`, so the site works under `/football-symbols/` or on a custom domain.
 - `web/` is the front-end source: plain HTML, CSS and JS with no framework and no bundler.
   `site/` is build output and is gitignored, **except `site/data/`, which is committed by the Action**.
@@ -53,7 +56,17 @@ Set `SITE_URL` (CI uses the configure-pages `base_url`) to get correct `og:url` 
   an `::after` pseudo-element enlarges the hit area.
 - Check every change at 375px: the page must have no horizontal scroll and strips must not overflow.
   The longest strips so far are 15 drives (NO at DET W1, MIN at TB W3).
-- Turf design tokens are in `:root` in `web/app.css`. The design is locked per the brief.
+- Turf design tokens are in `:root` in `web/app.css`. The design is locked per the brief. The game page's
+  chart colours (`--run`, `--pass`, `--pen`, `--kick`, `--field`) are a second `:root` block at the end.
+- **Game page** (`game/<nflverse game_id>/`, e.g. `game/2026_01_ARI_LAC/`): reached by tapping a Scores or
+  Team matchup card (the title link stretches over the card) or a ledger row's result. Strips are rebuilt from
+  `games/<id>.json` drives as one button per drive; drive 1 opens on load and tapping the open drive closes it.
+  The open drive is not in the URL (the router treats any `#…` as a legacy route).
+- Drive summary (modelled on Madden's drive summary): full field, own goal on the left, one row per snap,
+  15 rows tall (99% of drives 2016–2025) and growing past that. Incompletions/no-gain plays show only the
+  snap tick; punts/FGs a dotted line; the drive's legend emoji replaces the snap tick on its last row.
+  Stats: plays, yards, time, run %, pass %, penalties (penalty-only snaps don't count as plays). Arrow keys
+  step through plays.
 
 ## Deviations from BRIEF.md (decided with Jacob, Oct 2026)
 

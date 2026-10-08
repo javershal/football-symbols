@@ -83,7 +83,7 @@ function gameCard(g, i) {
       <div class="up">${stamp(g.home)}<span class="when">&nbsp;</span></div></article>`;
   }
   const row = (t, parts, pts, opp) => `<div class="row ${pts > opp ? 'win' : ''}">${stamp(t)}<div class="strip">${stripHTML(t, parts)}</div><span class="pts">${pts}</span></div>`;
-  return `<article class="card" data-fit data-game="${esc(g.id)}"><div class="ch"><span class="t">${head}</span><button class="tag copy" data-copy="${i}" aria-label="Copy ${head} to clipboard">Copy</button></div>
+  return `<article class="card linked" data-fit data-game="${esc(g.id)}"><div class="ch"><a class="t" href="game/${esc(g.id)}/">${head}</a><button class="tag copy" data-copy="${i}" aria-label="Copy ${head} to clipboard">Copy</button></div>
     ${row(g.away, g.aStrip, g.aScore, g.hScore)}${row(g.home, g.hStrip, g.hScore, g.aScore)}</article>`;
 }
 
@@ -136,7 +136,7 @@ function ledgerRow(team, r) {
     const live = started(r);
     return `<div class="lr up"><span class="wk">${r.week}</span>${opp}<span class="res">${live ? '<span class="live">Live</span>' : shortDay(r.day)}</span><span class="strip"></span></div>`;
   }
-  return `<div class="lr ${r.result.toLowerCase()}"><span class="wk">${r.week}</span>${opp}<span class="res"><b>${r.result}</b> ${r.pf}-${r.pa}</span><div class="strip">${stripHTML(team, r.strip)}</div></div>`;
+  return `<div class="lr ${r.result.toLowerCase()}"><span class="wk">${r.week}</span>${opp}<a class="res" href="game/${esc(r.id)}/"><b>${r.result}</b> ${r.pf}-${r.pa}</a><div class="strip">${stripHTML(team, r.strip)}</div></div>`;
 }
 function ledgerHead() {
   return `<div class="lr lh" aria-hidden="true"><span class="wk">Wk</span><span class="opp">Opp</span><span class="res">Result</span><span class="strip">Drives</span></div>`;
@@ -181,7 +181,7 @@ async function viewTeam({team}) {
         <div class="up">${stamp(r.opp)}<span class="when">&nbsp;</span></div></article>`;
     }
     const row = (t, parts, pts, opp, link) => `<div class="row ${pts > opp ? 'win' : ''}">${stamp(t, link)}<div class="strip">${stripHTML(t, parts)}</div><span class="pts">${pts}</span></div>`;
-    return `<article class="card" data-fit><div class="ch"><span class="t">${head}</span><span class="tag res-${r.result.toLowerCase()}">${r.result}</span>
+    return `<article class="card linked" data-fit><div class="ch"><a class="t" href="game/${esc(r.id)}/">${head}</a><span class="tag res-${r.result.toLowerCase()}">${r.result}</span>
         <button class="tag copy" data-copy="${r.week}" aria-label="Copy week ${r.week} game to clipboard">Copy</button></div>
       ${row(team, r.strip, r.pf, r.pa, false)}${row(r.opp, r.oppStrip, r.pa, r.pf, true)}</article>`;
   };
@@ -210,6 +210,154 @@ async function viewTeamIndex() {
       <ul>${ts.map(t => `<li><a href="team/${t}/">${stamp(t, false)}<span>${esc(name(t))}</span></a></li>`).join('')}</ul></section>`).join('')}</div>`;
 }
 
+// ---------- Game view: drive picker + drive summary chart ----------
+// Play kinds -> family for colour and the run/pass split. Positions are yardline_100 from the offense's view.
+const FAMILY = {run: 'run', kneel: 'run', pass: 'pass', inc: 'pass', sack: 'pass', int: 'pass', spike: 'pass', pen: 'pen', punt: 'kick', fg: 'kick'};
+const KIND = {run: 'Run', kneel: 'Kneel', pass: 'Pass', inc: 'Incomplete', sack: 'Sack', int: 'Interception', spike: 'Spike', pen: 'Penalty', punt: 'Punt', fg: 'Field goal'};
+const COL = {run: 'var(--run)', pass: 'var(--pass)', pen: 'var(--pen)', kick: 'var(--kick)'};
+const ORD = ['', '1st', '2nd', '3rd', '4th'];
+const gain = p => p.a - p.b;
+const signed = n => (n > 0 ? '+' + n : n < 0 ? '−' + -n : '0');
+const downText = p => (p.dn ? `${ORD[p.dn]} & ${p.togo >= p.a ? 'Goal' : p.togo}` : '');
+function spot(y, team, other) { // yardline_100 -> "ARI 10" / "50" / "LAC 15"
+  return y === 50 ? '50' : y > 50 ? `${team} ${100 - y}` : `${other} ${y}`;
+}
+function driveStats(d) {
+  const ps = d.plays, snaps = ps.filter(p => p.k !== 'pen');
+  const pct = f => (snaps.length ? Math.round(100 * snaps.filter(p => FAMILY[p.k] === f).length / snaps.length) : 0);
+  return {plays: snaps.length, yards: ps.length ? ps[0].a - ps[ps.length - 1].b : 0, time: d.top,
+    run: pct('run'), pass: pct('pass'), pens: ps.filter(p => p.pen).length, firsts: ps.filter(p => p.fd).length};
+}
+function headline(d) { // Madden-style: "34 yard field goal by C.Ryland"
+  const last = d.plays[d.plays.length - 1] || {}, yd = last.kick ? `${last.kick} yard ` : '';
+  switch (S.legend.outcomes.find(o => o.emoji === d.s)?.key) {
+    case 'td': return `Touchdown${d.scorer ? ' — ' + d.scorer : ''}`;
+    case 'fg': return `${yd}field goal${d.kicker ? ' by ' + d.kicker : ''}`;
+    case 'miss': return `${yd}field goal ${last.fg === 'blocked' ? 'blocked' : 'no good'}`.replace(/^f/, 'F');
+    case 'punt': return `Punt${last.kick ? ', ' + last.kick + ' yards' : ''}`;
+    case 'to': return !d.plays.length ? 'Fumbled kickoff return' : last.k === 'int' ? 'Intercepted' : 'Fumble lost';
+    case 'pick6': return 'Turnover returned for a touchdown';
+    case 'downs': return 'Turnover on downs';
+    case 'safety': return 'Safety';
+    case 'half': return 'End of half';
+    default: return 'End of game';
+  }
+}
+
+// Field chart. Own goal line on the left, always; one row per snap, top to bottom.
+// Height fits 15 rows (99% of drives 2016-2025; the max was 23 with every snap) and grows past that.
+const ROWS = 15, R = 4.4, TOP = 7, BOT = 7, X = y => 10 + (100 - y);
+function fieldSVG(d, opp) {
+  const lastI = d.plays.length - 1, H = TOP + Math.max(d.plays.length, ROWS) * R + BOT + 1;
+  const [c1] = S.teams.teams[d.team].colors, [o1] = S.teams.teams[opp].colors;
+  let s = `<svg viewBox="0 0 120 ${H}" role="img" aria-label="Field chart, ${d.plays.length} snaps">`;
+  for (let k = 0; k < 20; k++) s += `<rect x="${10 + k * 5}" y="0" width="5" height="${H}" fill="${k % 2 ? 'var(--field2)' : 'var(--field)'}"/>`;
+  s += `<rect x="0" y="0" width="10" height="${H}" fill="${c1}" opacity=".9"/><rect x="110" y="0" width="10" height="${H}" fill="${o1}" opacity=".9"/>`;
+  const ez = (t, x, r) => `<text x="${x}" y="${H / 2}" transform="rotate(${r} ${x} ${H / 2})" text-anchor="middle" dominant-baseline="central" fill="#fff" opacity=".85" font-size="5">${t}</text>`;
+  s += ez(d.team, 5, -90) + ez(opp, 115, 90);
+  for (let y = 10; y <= 110; y += 5) s += `<line x1="${y}" x2="${y}" y1="0" y2="${H}" stroke="#E9E6DA" stroke-width="${y % 10 ? .18 : .4}" opacity="${y % 10 ? .45 : .8}"/>`;
+  for (let k = 1; k <= 9; k++) {
+    const t = (k <= 5 ? k : 10 - k) * 10;
+    s += `<text x="${10 + k * 10}" y="5.3" text-anchor="middle" fill="#E9E6DA" font-size="3.9">${t}</text><text x="${10 + k * 10}" y="${H - 1.9}" text-anchor="middle" fill="#E9E6DA" font-size="3.9">${t}</text>`;
+  }
+  if (d.plays.length) s += `<line x1="${X(d.plays[0].a)}" x2="${X(d.plays[0].a)}" y1="${TOP - 1}" y2="${H - BOT + 1}" stroke="var(--acc)" stroke-width=".45" stroke-dasharray="1 .8"/>`;
+  d.plays.forEach((p, i) => {
+    const cy = TOP + i * R + R / 2, xa = X(p.a), xb = X(p.b), fam = FAMILY[p.k], c = COL[fam];
+    let m = `<rect class="hit" x="0" y="${TOP + i * R}" width="120" height="${R}"/>`;
+    if (i !== lastI) m += `<line x1="${xa}" x2="${xa}" y1="${cy - 1.8}" y2="${cy + 1.8}" stroke="#fff" stroke-width=".5" stroke-linecap="round"/>`;
+    if (p.k === 'int') {
+      m += `<line x1="${xa}" x2="${X(p.a - (p.air ?? 0))}" y1="${cy}" y2="${cy}" stroke="${c}" stroke-width=".55" stroke-dasharray="1.1 .7"/>`;
+    } else if (fam === 'kick') {
+      const xt = p.k === 'fg' ? 119.4 : Math.min(X(p.a - (p.kick ?? 0)), 119.4);
+      m += `<line x1="${xa}" x2="${xt}" y1="${cy}" y2="${cy}" stroke="${c}" stroke-width=".55" stroke-dasharray=".25 .9" stroke-linecap="round"/>`;
+    } else if (xb !== xa) { // incompletions and no-gain plays show only the snap tick
+      m += `<rect x="${Math.min(xa, xb)}" y="${cy - 1.3}" width="${Math.abs(xb - xa)}" height="2.6" rx="1.3" fill="${c}"/>`;
+    }
+    if (p.pen && p.k !== 'pen') m += `<path d="M${xb + .5} ${cy - 1.5}l1.6 1.5l-1.6 1.5z" fill="var(--pen)"/>`;
+    if (i === lastI) m += `<text class="em" x="${Math.min(Math.max(xa, 2), 117.6)}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="4.2">${d.s}</text>`;
+    s += `<g class="pl" data-p="${i}">${m}</g>`;
+  });
+  return s + '</svg>';
+}
+function playCaption(d, opp, i) {
+  const p = d.plays[i];
+  if (!p) return 'Tap a row, or use the arrow keys, to see each play.';
+  const n = gain(p), what = FAMILY[p.k] === 'kick' ? KIND[p.k] : `${KIND[p.k]} · ${signed(n)} yd${Math.abs(n) === 1 ? '' : 's'}`;
+  return `<b>${i + 1}. ${[downText(p), `Q${p.q} ${p.t}`, spot(p.a, d.team, opp)].filter(Boolean).join(' · ')} — ${what}</b><br>${esc(p.desc)}`;
+}
+const KEY = `<div class="key"><span><i style="background:var(--run)"></i>Run</span><span><i style="background:var(--pass)"></i>Pass</span>
+  <span><i style="background:var(--pen)"></i>Penalty</span><span><i class="dots"></i>Kick</span>
+  <span>▸ flag on the play · the drive's result sits at the snap of its last play</span></div>`;
+function driveHTML(g, i) {
+  const d = g.drives[i], opp = d.team === g.away ? g.home : g.away;
+  const top = `<div class="ds-top"><div class="ds-title">Drive Summary</div><div class="ds-team">${stamp(d.team, false)}<span title="Drive ${i + 1} of ${g.drives.length}">#${i + 1} · Q${d.q}</span></div></div>`;
+  if (!d.plays.length) return `<section class="ds">${top}<div class="ds-head">${d.s} ${esc(headline(d))}</div><div class="ds-sub">No offensive snaps.</div></section>`;
+  const st = driveStats(d), last = d.plays[d.plays.length - 1];
+  return `<section class="ds" aria-label="Drive ${i + 1} summary">${top}
+    <div class="ds-head">${d.s} ${esc(headline(d))}</div>
+    <div class="ds-sub">${spot(d.plays[0].a, d.team, opp)} → ${last.b <= 0 ? opp + ' end zone' : spot(last.b, d.team, opp)} · ${st.firsts} first down${st.firsts === 1 ? '' : 's'}</div>
+    <div class="ds-body">
+      <div><div class="field">${fieldSVG(d, opp)}</div><div class="cap" id="cap" aria-live="polite">${playCaption(d, opp, -1)}</div></div>
+      <dl class="st">
+        <div><dt>Plays</dt><dd>${st.plays}</dd></div><div><dt>Yards</dt><dd>${st.yards}</dd></div><div><dt>Time</dt><dd>${st.time}</dd></div>
+        <div><dt class="run">Run</dt><dd>${st.run}%</dd></div><div><dt class="pass">Pass</dt><dd>${st.pass}%</dd></div><div><dt class="pen">Penalty</dt><dd>${st.pens}</dd></div>
+      </dl></div>${KEY}</section>`;
+}
+// Strips rebuilt from the drives, one button per drive (segments match derive.strip()).
+function driveStrip(g, team) {
+  const segs = [[], [], []];
+  g.drives.forEach((d, i) => { if (d.team === team) segs[d.h].push(i); });
+  const parts = segs.filter((p, k) => k < 2 || p.length);
+  const pipe = `<span class="pipe" aria-hidden="true">${esc(S.legend.pipe)}</span>`;
+  return `<span class="s">${parts.map(p => p.map(i => `<button class="dv${i === S.game.sel ? ' on' : ''}" data-d="${i}" aria-expanded="${i === S.game.sel}" aria-label="Drive ${i + 1}, ${team}: ${esc(S.legend.label[g.drives[i].s])}">${g.drives[i].s}</button>`).join('')).join(pipe)}</span>`;
+}
+function drawGame() {
+  const {g, sel} = S.game;
+  const row = (t, pts, opp) => `<div class="row ${pts > opp ? 'win' : ''}">${stamp(t)}<div class="strip">${driveStrip(g, t)}</div><span class="pts">${pts}</span></div>`;
+  $('#gcard').innerHTML = `<div class="ch"><span class="t">${sel < 0 ? 'Tap a drive' : 'Tap it again to close'}</span><button class="tag copy" data-copy aria-label="Copy this game to clipboard">Copy</button></div>
+    ${row(g.away, g.aScore, g.hScore)}${row(g.home, g.hScore, g.aScore)}`;
+  $('#drive').innerHTML = sel < 0 ? '' : driveHTML(g, sel);
+  S.game.p = -1;
+  fit($('#gview'));
+}
+function pickPlay(p) {
+  const {g, sel} = S.game, d = g.drives[sel];
+  S.game.p = p;
+  document.querySelectorAll('#drive g.pl').forEach(x => x.classList.toggle('on', +x.dataset.p === p));
+  $('#cap').innerHTML = playCaption(d, d.team === g.away ? g.home : g.away, p);
+}
+async function viewGame({id}) {
+  const g = await getJSON(`${S.season}/games/${id}.json`);
+  weekNav(g.week);
+  const title = `${name(g.away)} at ${name(g.home)}`;
+  document.title = `${title}, Week ${g.week} · Possession Strips`;
+  const v = $('#view');
+  const sub = g.final ? `${title} · ${gameDate(g)} · Final ${g.aScore}–${g.hScore}` : `${title} · ${started(g) ? 'In progress' : gameDate(g)}`;
+  v.innerHTML = `<div class="hero"><h1 class="gh">${g.away} <span>at</span> ${g.home}</h1><div class="acts"><a class="btn" href="week/${g.week}/">← Week ${g.week}</a></div></div>
+    <p class="sub">${esc(sub)}</p>
+    <div id="gview">${g.final ? '<article class="card" id="gcard" data-fit></article><div id="drive"></div>'
+      : `<p class="sub">${started(g) ? 'Drive charts post after the final whistle.' : 'Drive charts post after the game.'}</p>`}</div>`;
+  if (!g.final) return;
+  S.game = {g, sel: 0, p: -1}; // open on the first drive
+  drawGame();
+  v.onclick = e => {
+    const b = e.target.closest('[data-d]');
+    if (b) { S.game.sel = +b.dataset.d === S.game.sel ? -1 : +b.dataset.d; return drawGame(); } // tap the open drive again to close
+    const pl = e.target.closest('g.pl');
+    if (pl) return pickPlay(+pl.dataset.p);
+    if (e.target.closest('[data-copy]')) return copy(g.copy, 'Copied — ' + g.copy.split(':')[0]);
+  };
+}
+// Arrow keys step through the open drive's plays.
+document.addEventListener('keydown', e => {
+  const G = S.game;
+  if (!G || G.sel < 0 || e.altKey || e.metaKey || e.ctrlKey || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  const step = {ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1}[e.key], n = G.g.drives[G.sel].plays.length;
+  if (!step || !n) return;
+  e.preventDefault();
+  pickPlay(Math.max(0, Math.min(n - 1, G.p + step)));
+});
+
 // ---------- routing: path routes (week/N/, standings/, team/ABBR/), #/… hashes accepted ----------
 function parseRoute() {
   let p = location.pathname.startsWith(ROOT) ? location.pathname.slice(ROOT.length) : '';
@@ -224,6 +372,7 @@ function routeOf(p) {
   const [a, b] = p.split('/').filter(Boolean);
   if (a === 'week' && +b >= 1 && +b <= 18) return {view: 'week', week: +b};
   if (a === 'standings') return {view: 'standings'};
+  if (a === 'game' && /^\d{4}_\d{2}_[A-Z]+_[A-Z]+$/.test(b || '')) return {view: 'game', id: b};
   if (a === 'team') {
     const t = b && (S.teams.aliases[b.toUpperCase()] || b.toUpperCase());
     return {view: 'team', team: S.teams.teams[t] ? t : null};
@@ -233,17 +382,19 @@ function routeOf(p) {
 function pathOf(r) {
   if (r.view === 'week') return r.home ? '' : `week/${r.week}/`;
   if (r.view === 'team') return r.team ? `team/${r.team}/` : 'team/';
+  if (r.view === 'game') return `game/${r.id}/`;
   return 'standings/';
 }
-const VIEWS = {week: viewWeek, standings: viewStandings, team: viewTeam};
+const VIEWS = {week: viewWeek, standings: viewStandings, team: viewTeam, game: viewGame};
 async function render() {
   const r = S.route = parseRoute();
   document.querySelectorAll('.tabs a').forEach(a => {
-    const on = a.dataset.tab === r.view;
+    const on = a.dataset.tab === (r.view === 'game' ? 'week' : r.view);
     a.classList.toggle('on', on);
     on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
   });
-  if (r.view !== 'week') $('#weeks').hidden = true;
+  if (r.view !== 'week' && r.view !== 'game') $('#weeks').hidden = true;
+  if (r.view !== 'game') S.game = null;
   try { await VIEWS[r.view](r); } catch (e) {
     console.error(e);
     $('#view').innerHTML = `<p class="sub err">Couldn't load this page's data. Try reloading.</p>`;

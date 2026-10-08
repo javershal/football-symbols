@@ -1,6 +1,6 @@
 """Copy web/ into site/ and write one HTML entry page per route, each with its own Open Graph tags.
 
-GitHub Pages can't rewrite URLs and unfurlers don't run JS, so week/N/, team/ABBR/ and standings/
+GitHub Pages can't rewrite URLs and unfurlers don't run JS, so week/N/, team/ABBR/, game/ID/ and standings/
 are real files. Every page uses a relative <base>, so the site works under /football-symbols/
 or at the root of a custom domain.
 """
@@ -24,7 +24,7 @@ def site_url() -> str:
     return os.environ.get("SITE_URL", "http://localhost:8000/").rstrip("/") + "/"
 
 
-def routes(season: int, latest_week: int, records: dict[str, str]) -> list[dict]:
+def routes(season: int, latest_week: int, records: dict[str, str], games: list[dict] = ()) -> list[dict]:
     teams = config.teams()["teams"]
     out = [dict(path="", title=f"Week {latest_week} · Possession Strips",
                 description=f"Every {season} NFL drive as an emoji. Week {latest_week} scores.")]
@@ -39,6 +39,15 @@ def routes(season: int, latest_week: int, records: dict[str, str]) -> list[dict]
         rec = f" ({records[t]})" if records.get(t) else ""
         out.append(dict(path=f"team/{t}/", title=f"{info['city']} {info['name']} · Possession Strips",
                         description=f"{info['name']} {season}{rec}: every drive, game by game."))
+    for g in games:
+        a, h = teams[g["away"]]["name"], teams[g["home"]]["name"]
+        if g["final"]:
+            title = f"{a} {g['aScore']}, {h} {g['hScore']} · Week {g['week']} · Possession Strips"
+            desc = f"Every drive of {a} at {h}, Week {g['week']} {season}, play by play."
+        else:
+            title = f"{a} at {h} · Week {g['week']} · Possession Strips"
+            desc = f"{a} at {h}, Week {g['week']} {season}. Drive charts post after the game."
+        out.append(dict(path=f"game/{g['id']}/", title=title, description=desc))
     return out
 
 
@@ -52,8 +61,10 @@ def write_pages(site: Path, season: int) -> None:
     st = json.loads((site / "data" / str(season) / "standings.json").read_text("utf-8"))
     records = {t["team"]: f"{t['w']}-{t['l']}" + (f"-{t['t']}" if t["t"] else "")
                for d in st["divisions"] for t in d["teams"]}
+    gdir = site / "data" / str(season) / "games"
+    games = [json.loads(p.read_text("utf-8")) for p in sorted(gdir.glob("*.json"))]
     root = site_url()
-    for r in routes(season, meta["latestWeek"], records):
+    for r in routes(season, meta["latestWeek"], records, games):
         depth = r["path"].count("/")
         page = tpl
         for k, val in {"base": "../" * depth or "./", "title": r["title"], "description": r["description"],

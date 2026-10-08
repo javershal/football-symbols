@@ -113,3 +113,54 @@ h2{margin:0 0 10px;font:800 30px/1 var(--head);text-shadow:2px 2px 0 var(--acc)}
 @media(max-width:420px){.tb,.tb.solo{padding:10px 10px 8px}}
 .th-stamp{display:flex;align-items:center;gap:16px}
 .rec.big{font-size:clamp(28px,8vw,44px)}
+/* linked cards: the title link stretches over the card; stamps and Copy stay on top */
+.card.linked{position:relative}
+.card.linked .ch a.t{text-decoration:none;color:inherit}
+.card.linked .ch a.t::after{content:'';position:absolute;inset:0}
+.card.linked:hover{border-color:var(--ink2)}
+.card.linked:hover .ch a.t{color:var(--ink)}
+.card.linked .stamp,.card.linked .tag.copy{z-index:1}
+.lr a.res{text-decoration:none}
+.lr a.res:hover{text-decoration:underline}
+/* game page: drive picker + Madden-style drive summary */
+:root{--run:#5EB4FF;--pass:#CDEB5E;--pen:#FF5C4D;--kick:#F4F1E8;--field:#2C6A3C;--field2:#2F7141}
+h1.gh{font-size:clamp(44px,13vw,96px)}
+h1.gh span{font-size:.4em;text-shadow:none;color:var(--ink2);vertical-align:.5em}
+#gcard{margin:0 0 16px}
+.dv{background:none;border:0;padding:0 .03em;font:inherit;line-height:inherit;border-bottom:2px solid transparent;position:relative}
+.dv::after{content:'';position:absolute;inset:-8px -1px} /* taller tap target than the emoji */
+.dv.on{border-bottom-color:var(--acc);background:rgba(227,179,65,.18)}
+.dv:not(.on){opacity:.78}
+.dv:hover{opacity:1}
+@keyframes ds-open{from{opacity:0;transform:translateY(-6px)}}
+.ds{animation:ds-open .18s ease-out;border:3px solid var(--acc);background:#1f3f27;margin-bottom:12px}
+.ds-top{display:flex;align-items:stretch;margin:-3px -3px 0}
+.ds-title{background:var(--acc);color:#1d2a1f;font:800 clamp(17px,5vw,30px)/1 var(--head);letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;padding:9px 30px 7px 14px;clip-path:polygon(0 0,100% 0,calc(100% - 18px) 100%,0 100%)}
+.ds-team{display:flex;align-items:center;gap:10px;padding:0 12px;color:var(--ink2);font-size:12px;text-transform:uppercase;letter-spacing:.06em;min-width:0}
+.ds-team span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ds-head{font:800 clamp(22px,5.6vw,30px)/1.1 var(--head);padding:14px 14px 4px;text-wrap:balance}
+.ds-sub{color:var(--ink2);font-size:12.5px;padding:0 14px 12px}
+.ds-body{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;padding:0 14px 14px}
+@media(min-width:760px){.ds-body{grid-template-columns:minmax(0,1.9fr) minmax(170px,1fr);align-items:start}}
+.field{max-width:560px;border:3px solid #E9E6DA;background:var(--field);line-height:0}
+.field svg{width:100%;height:auto;display:block}
+.field text{font-family:var(--head);font-weight:800}
+.field text.em{font-family:var(--emoji);font-weight:400}
+.field .hit{fill:transparent;cursor:pointer}
+.field g.pl:hover .hit,.field g.pl.on .hit{fill:rgba(255,255,255,.10)}
+.cap{min-height:3.2em;margin-top:8px;font-size:12.5px;color:var(--ink2)}
+.cap b{color:var(--ink)}
+.st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;margin:0}
+.st>div{display:flex;flex-direction:column-reverse;gap:3px}
+.st dt{font:800 15px/1.1 var(--head);letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.st dd{margin:0;font:800 26px/1 var(--head)}
+.st .run{color:var(--run)}.st .pass{color:var(--pass)}.st .pen{color:var(--pen)}
+@media(min-width:760px){
+  .st{grid-template-columns:1fr;gap:6px;padding-top:6px}
+  .st>div{flex-direction:row;align-items:center;gap:14px}
+  .st dt{width:96px;text-align:right}
+  .st dd{font-size:30px}
+}
+.key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink2);margin:0 14px;padding:10px 0 12px;border-top:1.5px dashed var(--rule)}
+.key i{display:inline-block;width:18px;height:6px;margin-right:6px;vertical-align:middle;border-radius:3px}
+.key i.dots{height:0;border-radius:0;border-top:2px dotted var(--kick)}
