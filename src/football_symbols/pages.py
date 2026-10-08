@@ -26,26 +26,26 @@ def site_url() -> str:
 
 def routes(season: int, latest_week: int, records: dict[str, str], games: list[dict] = ()) -> list[dict]:
     teams = config.teams()["teams"]
-    out = [dict(path="", title=f"Week {latest_week} · Possession Strips",
+    out = [dict(path="", title=f"Week {latest_week} · Scoreboard 2.0",
                 description=f"Every {season} NFL drive as an emoji. Week {latest_week} scores.")]
     for w in range(1, 19):
-        out.append(dict(path=f"week/{w}/", title=f"Week {w} · Possession Strips",
+        out.append(dict(path=f"week/{w}/", title=f"Week {w} · Scoreboard 2.0",
                         description=f"Every drive of every {season} Week {w} game, one emoji per drive."))
-    out.append(dict(path="standings/", title="Standings · Possession Strips",
+    out.append(dict(path="standings/", title="Standings · Scoreboard 2.0",
                     description=f"{season} NFL standings by division, with every game's drives."))
-    out.append(dict(path="team/", title="Teams · Possession Strips",
+    out.append(dict(path="team/", title="Teams · Scoreboard 2.0",
                     description=f"Pick a team to see its {season} season drive by drive."))
     for t, info in teams.items():
         rec = f" ({records[t]})" if records.get(t) else ""
-        out.append(dict(path=f"team/{t}/", title=f"{info['city']} {info['name']} · Possession Strips",
+        out.append(dict(path=f"team/{t}/", title=f"{info['city']} {info['name']} · Scoreboard 2.0",
                         description=f"{info['name']} {season}{rec}: every drive, game by game."))
     for g in games:
         a, h = teams[g["away"]]["name"], teams[g["home"]]["name"]
         if g["final"]:
-            title = f"{a} {g['aScore']}, {h} {g['hScore']} · Week {g['week']} · Possession Strips"
+            title = f"{a} {g['aScore']}, {h} {g['hScore']} · Week {g['week']} · Scoreboard 2.0"
             desc = f"Every drive of {a} at {h}, Week {g['week']} {season}, play by play."
         else:
-            title = f"{a} at {h} · Week {g['week']} · Possession Strips"
+            title = f"{a} at {h} · Week {g['week']} · Scoreboard 2.0"
             desc = f"{a} at {h}, Week {g['week']} {season}. Drive charts post after the game."
         out.append(dict(path=f"game/{g['id']}/", title=title, description=desc))
     return out

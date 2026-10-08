@@ -1,4 +1,4 @@
-# Possession Strips
+# Scoreboard 2.0
 
 Every 2026 NFL drive as an emoji, one strip per team per game. Static site on GitHub Pages; a scheduled
 GitHub Action pulls [nflverse](https://github.com/nflverse/nflverse-data) data (CC-BY-4.0), derives

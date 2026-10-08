@@ -1,4 +1,4 @@
-// Possession Strips front end. Renders site/data JSON; no framework, no build step.
+// Scoreboard 2.0 front end. Renders site/data JSON; no framework, no build step.
 'use strict';
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
@@ -104,7 +104,7 @@ function weekNav(cur) {
 
 async function viewWeek({week}) {
   weekNav(week);
-  document.title = `Week ${week} · Possession Strips`;
+  document.title = `Week ${week} · Scoreboard 2.0`;
   const data = await getJSON(`${S.season}/weeks/${week}.json`);
   const games = data.games, fin = games.filter(g => g.final);
   const sub = !games.length ? 'No games scheduled'
@@ -145,7 +145,7 @@ function ledgerHead() {
 // ---------- Standings view ----------
 const slug = s => s.toLowerCase().replace(/\s+/g, '-');
 async function viewStandings() {
-  document.title = 'Standings · Possession Strips';
+  document.title = 'Standings · Scoreboard 2.0';
   const st = await getJSON(`${S.season}/standings.json`);
   const block = t => `<section class="card tb" data-fit aria-label="${esc(S.teams.teams[t.team].city + ' ' + name(t.team))}">
       <div class="tbh">${stamp(t.team)}<a class="tn" href="team/${t.team}/">${esc(name(t.team))}</a>
@@ -168,7 +168,7 @@ async function viewStandings() {
 async function viewTeam({team}) {
   if (!team) return viewTeamIndex();
   const info = S.teams.teams[team];
-  document.title = `${info.city} ${info.name} · Possession Strips`;
+  document.title = `${info.city} ${info.name} · Scoreboard 2.0`;
   const d = await getJSON(`${S.season}/teams/${team}.json`);
   const mode = S.teamMode || 'matchups';
   const matchup = r => {
@@ -204,7 +204,7 @@ async function viewTeam({team}) {
   fit(v);
 }
 async function viewTeamIndex() {
-  document.title = 'Teams · Possession Strips';
+  document.title = 'Teams · Scoreboard 2.0';
   $('#view').innerHTML = `<div class="hero"><h1>Teams</h1></div><p class="sub">Pick a team to see its season, drive by drive.</p>
     <div class="tidx">${Object.entries(S.teams.divisions).map(([dv, ts]) => `<section><h2>${esc(dv)}</h2>
       <ul>${ts.map(t => `<li><a href="team/${t}/">${stamp(t, false)}<span>${esc(name(t))}</span></a></li>`).join('')}</ul></section>`).join('')}</div>`;
@@ -330,7 +330,7 @@ async function viewGame({id}) {
   const g = await getJSON(`${S.season}/games/${id}.json`);
   weekNav(g.week);
   const title = `${name(g.away)} at ${name(g.home)}`;
-  document.title = `${title}, Week ${g.week} · Possession Strips`;
+  document.title = `${title}, Week ${g.week} · Scoreboard 2.0`;
   const v = $('#view');
   const sub = g.final ? `${title} · ${gameDate(g)} · Final ${g.aScore}–${g.hScore}` : `${title} · ${started(g) ? 'In progress' : gameDate(g)}`;
   v.innerHTML = `<div class="hero"><h1 class="gh">${g.away} <span>at</span> ${g.home}</h1><div class="acts"><a class="btn" href="week/${g.week}/">← Week ${g.week}</a></div></div>

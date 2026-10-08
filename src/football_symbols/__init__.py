@@ -1,4 +1,4 @@
-"""Possession Strips: every NFL drive as an emoji, built into a static site."""
+"""Scoreboard 2.0: every NFL drive as an emoji, built into a static site."""
 
 SEASON = 2026
 

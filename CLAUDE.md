@@ -1,4 +1,4 @@
-# Possession Strips (football-symbols)
+# Scoreboard 2.0 (football-symbols)
 
 A static site showing every 2026 NFL drive as one emoji per possession. It is live at
 https://javershal.github.io/football-symbols/ (repo `javershal/football-symbols`, public).
@@ -88,6 +88,8 @@ Set `SITE_URL` (CI uses the configure-pages `base_url`) to get correct `og:url` 
   the same row layout as Standings). `team/` is an index of all 32 teams by division. Team stamps link
   to team pages everywhere.
 - No link to the GitHub repo on the site (tried and removed at Jacob's request).
+- **Renamed from "Possession Strips" to "Scoreboard 2.0"** once game pages added drive summaries. BRIEF.md
+  and `prototype_week_view.html` keep the old name as historical references.
 
 ## Open items / known caveats
 

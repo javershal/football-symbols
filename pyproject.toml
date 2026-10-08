@@ -1,7 +1,7 @@
 [project]
 name = "football-symbols"
 version = "0.1.0"
-description = "Possession Strips: every NFL drive as an emoji, as a static site"
+description = "Scoreboard 2.0: every NFL drive as an emoji, as a static site"
 authors = [
     { name = "javershal", email = "jza22092@gmail.com" }
 ]
