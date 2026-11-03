@@ -32,7 +32,7 @@ def test_plays_chain_snap_to_snap(drives):
             ps = d["plays"]
             for p, nxt in zip(ps, ps[1:]):
                 assert p["b"] == nxt["a"], (gid, d["team"], p["desc"])
-            if d["s"] == "🟩":
+            if d["s"] == "🟩" and ps:  # a kickoff returned for a TD is a 🟩 possession with no snaps
                 assert ps[-1]["b"] == 0, (gid, ps[-1]["desc"])
 
 
@@ -50,6 +50,12 @@ def test_field_goal_drive(drives):
 def test_lost_kickoff_fumble_has_no_snaps(drives):
     d = [d for d in drives["2026_03_CAR_CLE"] if not d["plays"]]
     assert [(x["team"], x["s"]) for x in d] == [("CLE", "🔺")]
+
+
+def test_kickoff_return_td_has_no_snaps(drives):
+    """W8 LV at NYJ: D.Laube's 95-yard kickoff return TD is LV's 🟩 possession, with no scrimmage snaps."""
+    d = [d for d in drives["2026_08_LV_NYJ"] if d["s"] == "🟩" and not d["plays"]]
+    assert [(x["team"], x.get("scorer")) for x in d] == [("LV", "D.Laube")]
 
 
 def test_game_files_only_carry_drives_when_final(games, drives):

@@ -231,7 +231,7 @@ function driveStats(d) {
 function headline(d) { // Madden-style: "34 yard field goal by C.Ryland"
   const last = d.plays[d.plays.length - 1] || {}, yd = last.kick ? `${last.kick} yard ` : '';
   switch (S.legend.outcomes.find(o => o.emoji === d.s)?.key) {
-    case 'td': return `Touchdown${d.scorer ? ' — ' + d.scorer : ''}`;
+    case 'td': return `${d.plays.length ? 'Touchdown' : 'Kickoff return touchdown'}${d.scorer ? ' — ' + d.scorer : ''}`;
     case 'fg': return `${yd}field goal${d.kicker ? ' by ' + d.kicker : ''}`;
     case 'miss': return `${yd}field goal ${last.fg === 'blocked' ? 'blocked' : 'no good'}`.replace(/^f/, 'F');
     case 'punt': return `Punt${last.kick ? ', ' + last.kick + ' yards' : ''}`;
